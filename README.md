@@ -1,4 +1,4 @@
-ASP.NET Coreのテストに関するドキュメントの日本語訳。
+.NET Coreのテストに関するドキュメントの日本語訳。
 https://docs.asp.net/en/latest/testing/index.html
 
 
