@@ -60,11 +60,11 @@
 
 .. code-block:: json
 
-{
-    "version": "1.0.0-*",
-    "testRunner": "xunit",
-    // ...
-}
+    {
+        "version": "1.0.0-*",
+        "testRunner": "xunit",
+        // ...
+    }
 
 　テンプレートはフレームワークノードをnetcoreapp1.0を使うように設定し、xUnit.testを使うように設定する。
 
@@ -96,7 +96,7 @@
     }
 
 　PrimeServiceにはディレクトリパスに関する情報は含まれない。なぜならsrc、testそしてglobal.jsonの示唆する構成で作られているはずであり、ビルドシステムはプロジェクト内で正しい場所を見つけられるだろうからだ。' "target": "project" 'を加えるのはNuGetにプロジェクトのディレクトリ位置を指示するためである。このキーがなければ、同じ名前のパッケージをあなたのライブラリとしてダウンロードする必要があるだろう。
-　ファイルの全容はGithubの[サンプルリポジトリ](https://github.com/dotnet/core-docs/blob/master/samples/core/getting-started/unit-testing-using-dotnet-test/test/PrimeService.Tests/project.json)でみられる。
+　ファイルの全容はGithubの`サンプルリポジトリ<https://github.com/dotnet/core-docs/blob/master/samples/core/getting-started/unit-testing-using-dotnet-test/test/PrimeService.Tests/project.json>`_でみられる。
 　この初期構成において、最初のテストを書くことができる。最初のユニットテストにおいて、すべてが設定されており、機能の追加やテストがスムーズに動くこと確認できるだろう。
 
 最初のテストを作る
@@ -169,6 +169,8 @@
 
 　これでテストはすべてパスするようになった。
 　テストを書き、パスするようにコードを書いていく。テストの最終版と完全実装がそれぞれ下記。
+
 https://github.com/dotnet/core-docs/blob/master/samples/core/getting-started/unit-testing-using-dotnet-test/test/PrimeService.Tests/PrimeServie_IsPrimeShould.cs
 https://github.com/dotnet/core-docs/blob/master/samples/core/getting-started/unit-testing-using-dotnet-test/src/PrimeService/PrimeService.cs
+
 　小さなライブラリを書き、そのテスト群も書いた。このソリューションを行使したので、新しいパッケージ追加やテストはシームレスになり、問題に集中して取り組めるようになった。このツールは自動で実行される。
