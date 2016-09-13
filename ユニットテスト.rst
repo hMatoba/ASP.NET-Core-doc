@@ -7,18 +7,17 @@
 
 　クロスプラットフォームツールを使ってライブラリを書くのは、ソースやテストを含む複数プロジェクトを持つソリューションの情報がある。この記事では、それらの慣習をフォローする。最終的にはプロジェクト構成は下記のようになる。
 
-```
-/unit-testing-using-dotnet-test
-|__global.json
-|__/src
-|__/PrimeService
-    |__Source Files
-    |__project.json
-/test
-|__/PrimeService.Tests
-    |__Test Files
-    |__project.json
-```
+.. code-block:: json
+    /unit-testing-using-dotnet-test
+    |__global.json
+    |__/src
+    |__/PrimeService
+        |__Source Files
+        |__project.json
+    /test
+    |__/PrimeService.Tests
+        |__Test Files
+        |__project.json
 
 　ルートディレクトリでは、srcとtestというディレクトリを含んだglobal.jsonを作成する必要がある。
 
