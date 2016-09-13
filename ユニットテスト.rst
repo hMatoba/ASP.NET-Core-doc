@@ -22,34 +22,35 @@
 
 　ルートディレクトリでは、srcとtestというディレクトリを含んだglobal.jsonを作成する必要がある。
 
-```json
-{
-    "projects": [
-        "src",
-        "test"
-    ]
-}
-```
+.. code-block:: json
+
+    {
+        "projects": [
+            "src",
+            "test"
+        ]
+    }
 
 ソースプロジェクトを作る
 ------------------------------------------------------------
 
 　さあ、srcディレクトリにて、PrimeServiceを作る。そのディレクトリ内でコマンド"dotnet new -t lib"を実行し、ソースプロジェクトを作る。
 
-```cs
-using System;
+.. code-block:: cs
 
-namespace Prime.Services
-{
-    public class PrimeService
+    using System;
+
+    namespace Prime.Services
     {
-        public bool IsPrime(int candidate) 
+        public class PrimeService
         {
-            throw new NotImplementedException("Please create a test first");
-        } 
+            public bool IsPrime(int candidate) 
+            {
+                throw new NotImplementedException("Please create a test first");
+            } 
+        }
     }
-}
-```
+
 
 テストプロジェクトを作る
 --------------------------------------------------------
@@ -57,42 +58,42 @@ namespace Prime.Services
 　続いて、testディレクトリへ移り、PrimeServices.Testsディレクトリを作る。そのディレクトリへ移り、コマンド"dotnet new -t xunittest"を実行する。作成されるテストプロジェクトではxunitをテストライブラリとして使う。
 　project.jsonは以下のように。
 
-```json
+.. code-block:: json
+
 {
     "version": "1.0.0-*",
     "testRunner": "xunit",
     // ...
 }
-```
 
 　テンプレートはフレームワークノードをnetcoreapp1.0を使うように設定し、xUnit.testを使うように設定する。
 
-```json
-"frameworks": {
-    "netcoreapp1.0": {
-        "imports": [
-        "dotnet54",
-        "portable-net45+win8" 
-        ]
+.. code-block:: json
+
+    "frameworks": {
+        "netcoreapp1.0": {
+            "imports": [
+            "dotnet54",
+            "portable-net45+win8" 
+            ]
+        }
     }
-}
-```
 
 　テストプロジェクトではユニットテストを作成、実行するためにさらにパッケージが必要になる。"dotnet new"はxunitとxunit runnerを追加する。さらに別途、PrimeServiceパッケージをプロジェクトの依存として加える必要がある。
 
-```json
-"dependencies": {
-    "Microsoft.NETCore.App": {
-        "type":"platform",
-        "version": "1.0.0"
-    },
-    "xunit":"2.1.0",
-    "dotnet-test-xunit": "1.0.0-rc2-192208-24",
-    "PrimeService": {
-        "target": "project"
+.. code-block:: json
+
+    "dependencies": {
+        "Microsoft.NETCore.App": {
+            "type":"platform",
+            "version": "1.0.0"
+        },
+        "xunit":"2.1.0",
+        "dotnet-test-xunit": "1.0.0-rc2-192208-24",
+        "PrimeService": {
+            "target": "project"
+        }
     }
-}
-```
 
 　PrimeServiceにはディレクトリパスに関する情報は含まれない。なぜならsrc、testそしてglobal.jsonの示唆する構成で作られているはずであり、ビルドシステムはプロジェクト内で正しい場所を見つけられるだろうからだ。' "target": "project" 'を加えるのはNuGetにプロジェクトのディレクトリ位置を指示するためである。このキーがなければ、同じ名前のパッケージをあなたのライブラリとしてダウンロードする必要があるだろう。
 　ファイルの全容はGithubの[サンプルリポジトリ](https://github.com/dotnet/core-docs/blob/master/samples/core/getting-started/unit-testing-using-dotnet-test/test/PrimeService.Tests/project.json)でみられる。
@@ -103,43 +104,43 @@ namespace Prime.Services
 
 　TDDアプローチでは、失敗するテストを書き、それをパスするようにコードを書く、というプロセスを繰り返していく。だからまず失敗するテストを加工。PrimeServices.Testsディレクトリからprogram.scを消し、下記の内容のC#ファイルを作る。
 
-```cs
-namespace Prime.UnitTests.Services
-{
-    public class PrimeService_IsPrimeShould
+.. code-block:: cs
+
+    namespace Prime.UnitTests.Services
     {
-        private readonly PrimeService _primeService;
-        public PrimeService_IsPrimeShould()
+        public class PrimeService_IsPrimeShould
         {
-            _primeService = new PrimeService();
-        }
+            private readonly PrimeService _primeService;
+            public PrimeService_IsPrimeShould()
+            {
+                _primeService = new PrimeService();
+            }
 
-        [Fact]
-        public void ReturnFalseGivenValueOf1()
-        {
-            var result = _primeService.IsPrime(1);
+            [Fact]
+            public void ReturnFalseGivenValueOf1()
+            {
+                var result = _primeService.IsPrime(1);
 
-            Assert.False(result, $"1 should not be prime");
+                Assert.False(result, $"1 should not be prime");
+            }
         }
     }
-}
-```
 
 　[Fact]属性はメソッドが一つのテストであることを示す。
 　このファイルを保存し、"dotnet build"でテストを走らせるためにプロジェクトをビルドする。もしまだPrimeServiceプロジェクトをビルドしていないなら、ビルドシステムはそれを検知してビルドを行うだろう。なぜならPrimeServiceプロジェクトはテストプロジェクトに被依存だから。
 　"dotnet test"をコンソールから、テストのために実行する。xunitテストランナーはコンソールのためのエントリーポイントを持っている。"dotnet test"はテストを開始するが、コマンドライン引数のも対応している。
 　最初のテストが失敗しただろう。なにも実装を開始してないはずだ。テストをパスするシンプルなコードをまず書いてみる。
 
-```cs
-public bool IsPrime(int candidate) 
-{
-    if(candidate == 1) 
-    { 
-        return false;
-    } 
-    throw new NotImplementedException("Please create a test first");
-}
-```
+.. code-block:: cs
+
+    public bool IsPrime(int candidate) 
+    {
+        if(candidate == 1) 
+        { 
+            return false;
+        } 
+        throw new NotImplementedException("Please create a test first");
+    }
 
 機能をさらに加える
 ---------------------------------------------------------------
@@ -147,24 +148,24 @@ public bool IsPrime(int candidate)
 　テストを一つパスした。さらに書いていく。またシンプルなケースでいく。またこれらのテストを[Fact]属性を使って書くわけだが、退屈になってくる。ここでxunitには似たようなテストを書くための属性設定がある。Theoryは同じコードで、異なる引数入力のテストを実行できる。[InlineData]属性を使うことでこれらの入力を使ってテストをできる。
 　新しいテストを書かずに、新しい属性設定を加えることでテストを追加することができる。
 
-```cs
-[Theory]
-[InlineData(-1)]
-[InlineData(0)]
-[InlineData(1)]
-public void ReturnFalseGivenValuesLessThan2(int value)
-{
-    var result = _primeService.IsPrime(value);
+.. code-block:: cs
 
-    Assert.False(result, $"{value} should not be prime");
-}
-```
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void ReturnFalseGivenValuesLessThan2(int value)
+    {
+        var result = _primeService.IsPrime(value);
+
+        Assert.False(result, $"{value} should not be prime");
+    }
 
 　"dotnet test"を実行し、テスト二つがパスするのを確認する。これらをパスするようにコードを書き換える必要がある。メソッドの開始直後に下記を追加する。
 
-```cs
-if(candidate < 2)
-```
+.. code-block:: vs
+
+    if(candidate < 2)
 
 　これでテストはすべてパスするようになった。
 　テストを書き、パスするようにコードを書いていく。テストの最終版と完全実装がそれぞれ下記。
