@@ -33,21 +33,44 @@ ASP.NET Coreでの統合テスト
 テストホスト
 ^^^^^^^^^^^^^
 
-ASP.NET Core includes a test host that can be added to integration test projects and used to host ASP.NET Core applications, serving test requests without the need for a real web host. The provided sample includes an integration test project which has been configured to use `xUnit`_ and the Test Host, as you can see from this excerpt from its *project.json* file:
+ASP.NET CoreにはASP.NET Coreアプリケーションをサーバーでの公開なしにテストできるtest hostがある。提供されているサンプルではxUnitとTest Hostを使ってproject.jsonの設定どおりに閲覧できるテストプロジェクトがある:
 
-.. literalinclude:: integration-testing/sample/test/PrimeWeb.IntegrationTests/project.json
-  :language: javascript
-  :lines: 9-14
-  :dedent: 2
-  :emphasize-lines: 5
+.. code-block:: json
+
+    "dependencies": {
+        "PrimeWeb": "1.0.0",
+        "xunit": "2.1.0",
+        "dotnet-test-xunit": "1.0.0-rc2-build10025",
+        "Microsoft.AspNetCore.TestHost": "1.0.0"
+    },
 
 Microsoft.AspNetCore.TestHostパッケージでは、テストサーバーを作成、設定できる。以下に示すテストでは、ルートが"Hello World!"と返すものをどのようにテストするかを確認する。 
 
-.. literalinclude:: integration-testing/sample/test/PrimeWeb.IntegrationTests/PrimeWebDefaultRequestShould.cs
-  :language: c#
-  :lines: 11-33
-  :dedent: 8
-  :emphasize-lines: 6-7
+.. code-block:: cs 
+
+    private readonly TestServer _server;
+    private readonly HttpClient _client;
+    public PrimeWebDefaultRequestShould()
+    {
+        // Arrange
+        _server = new TestServer(new WebHostBuilder()
+            .UseStartup<Startup>());
+        _client = _server.CreateClient();
+    }
+
+    [Fact]
+    public async Task ReturnHelloWorld()
+    {
+        // Act
+        var response = await _client.GetAsync("/");
+        response.EnsureSuccessStatusCode();
+
+        var responseString = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.Equal("Hello World!",
+            responseString);
+    }
 
 これらのテストはArrange-Act-Assertパターンを使っているが、Arrangeステップはコンストラクタで行われている。WebHostBuilderはTestHostを作るために使われ、Configureメソッドをパスさせている。このメソッドはTestServerパイプラインを設定するのに使われる。 
 
@@ -55,11 +78,66 @@ Microsoft.AspNetCore.TestHostパッケージでは、テストサーバーを作
 
 さらに機能をテストするための統合テストを追加していく。
 
-.. literalinclude:: integration-testing/sample/test/PrimeWeb.IntegrationTests/PrimeWebCheckPrimeShould.cs
-  :language: c#
-  :lines: 9-66
-  :dedent: 4
-  :emphasize-lines: 8-9
+.. code-block:: cs
+
+    public class PrimeWebCheckPrimeShould
+    {
+        private readonly TestServer _server;
+        private readonly HttpClient _client;
+        public PrimeWebCheckPrimeShould()
+        {
+            // Arrange
+            _server = new TestServer(new WebHostBuilder()
+                .UseStartup<Startup>());
+            _client = _server.CreateClient();
+        }
+
+        private async Task<string> GetCheckPrimeResponseString(
+            string querystring = "")
+        {
+            var request = "/checkprime";
+            if(!string.IsNullOrEmpty(querystring))
+            {
+                request += "?" + querystring;
+            }
+            var response = await _client.GetAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        [Fact]
+        public async Task ReturnInstructionsGivenEmptyQueryString()
+        {
+            // Act
+            var responseString = await GetCheckPrimeResponseString();
+
+            // Assert
+            Assert.Equal("Pass in a number to check in the form /checkprime?5",
+                responseString);
+        }
+        [Fact]
+        public async Task ReturnPrimeGiven5()
+        {
+            // Act
+            var responseString = await GetCheckPrimeResponseString("5");
+
+            // Assert
+            Assert.Equal("5 is prime!",
+                responseString);
+        }
+
+        [Fact]
+        public async Task ReturnNotPrimeGiven6()
+        {
+            // Act
+            var responseString = await GetCheckPrimeResponseString("6");
+
+            // Assert
+            Assert.Equal("6 is NOT prime!",
+                responseString);
+        }
+    }
 
 ここで注意だが、この記事では本当の素数チェックは行っていない。それでもアプリケーションは私たちの期待どおりに動いている。私たちはすでにPrimeServiceのユニットテストカバレッジでを出してあるからそうなっている。 
 
@@ -74,8 +152,7 @@ Microsoft.AspNetCore.TestHostパッケージでは、テストサーバーを作
 
 リファクタリングはコードの動作を変えずに、コードのデザインを変えて質を上げることである。それはシステムに影響がないことを確かめるため、一連のテストととも行い、テストすべてをパスすべきである。下記が素数チェックの実装である。 
 
-.. code-block:: c#
-  :emphasize-lines: 11-31
+.. code-block:: cs
 
     public void Configure(IApplicationBuilder app,
         IHostingEnvironment env)
@@ -123,21 +200,97 @@ ASP.NET Coreのミドルウェアの長所が使える。それによって素�
 
 パスをミドルウェアがパラメータとして使えるようにしたい。ミドルウェアクラスはRequestDelegateとPrimeCheckerOptionsのインスタンスがコンストラクタに含まれるだろう。もしミドルウェアでの設定とリクエストによるパスが一致しなければ、別のミドルウェアを呼んで、なければさらにというチェインにする。あとの実装コードはConfigure内のInvokeメソッドである。 
 
-.. note:: Since our middleware depends on the ``PrimeService`` service, we are also requesting an instance of this service via the constructor. The framework will provide this service via :doc:`/fundamentals/dependency-injection`, assuming it has been configured (e.g. in ``ConfigureServices``).
+.. code-block:: cs
 
-.. literalinclude:: integration-testing/sample/src/PrimeWeb/Middleware/PrimeCheckerMiddleware.cs
-  :language: none
-  :emphasize-lines: 39-63
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
+    using PrimeWeb.Services;
+    using System;
+    using System.Threading.Tasks;
+
+    namespace PrimeWeb.Middleware
+    {
+        public class PrimeCheckerMiddleware
+        {
+            private readonly RequestDelegate _next;
+            private readonly PrimeCheckerOptions _options;
+            private readonly PrimeService _primeService;
+
+            public PrimeCheckerMiddleware(RequestDelegate next,
+                PrimeCheckerOptions options,
+                PrimeService primeService)
+            {
+                if (next == null)
+                {
+                    throw new ArgumentNullException(nameof(next));
+                }
+                if (options == null)
+                {
+                    throw new ArgumentNullException(nameof(options));
+                }
+                if (primeService == null)
+                {
+                    throw new ArgumentNullException(nameof(primeService));
+                }
+
+                _next = next;
+                _options = options;
+                _primeService = primeService;
+            }
+
+            public async Task Invoke(HttpContext context)
+            {
+                var request = context.Request;
+                if (!request.Path.HasValue ||
+                    request.Path != _options.Path)
+                {
+                    await _next.Invoke(context);
+                }
+                else
+                {
+                    int numberToCheck;
+                    if (int.TryParse(request.QueryString.Value.Replace("?", ""), out numberToCheck))
+                    {
+                        if (_primeService.IsPrime(numberToCheck))
+                        {
+                            await context.Response.WriteAsync($"{numberToCheck} is prime!");
+                        }
+                        else
+                        {
+                            await context.Response.WriteAsync($"{numberToCheck} is NOT prime!");
+                        }
+                    }
+                    else
+                    {
+                        await context.Response.WriteAsync($"Pass in a number to check in the form {_options.Path}?5");
+                    }
+                }
+            }
+        }
+    }
 
 .. note:: Since this middleware acts as an endpoint in the request delegate chain when its path matches, there is no call to ``_next.Invoke`` in the case where this middleware handles the request.
 
 このミドルウェアはそれ自身の設定を楽にするため下記のようにメソッドを加えてある
 
-.. literalinclude:: integration-testing/sample/src/PrimeWeb/Startup.cs
-  :language: c#
-  :lines: 19-33
-  :dedent: 8
-  :emphasize-lines: 9
+.. code-block:: cs
+
+    public void Configure(IApplicationBuilder app,
+        IHostingEnvironment env)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+
+        app.UsePrimeChecker();
+
+        app.Run(async (context) =>
+        {
+            await context.Response.WriteAsync("Hello World!");
+        });
+    }
+
 
 このリファクタリングにおいて、アプリケーションはこれまでと同様に動く。それは統合テストすべてにパスすることで保障されている。
 
