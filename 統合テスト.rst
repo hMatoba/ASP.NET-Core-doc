@@ -292,7 +292,7 @@ ASP.NET Coreのミドルウェアの長所が使える。それによって素�
 
 このリファクタリングにおいて、アプリケーションはこれまでと同様に動く。それは統合テストすべてにパスすることで保障されている。
 
-.. tip:: リファクタリングが済みテストにパスしたタイミング、それはソースコントロールへコミットするタイミングとしてはちょうどいい。もしTDDサイクルを試しているなら、 `Red-Green-Refactorサイクルを適用することを考えてもいいかもしれない <http://ardalis.com/rgrc-is-the-new-red-green-refactor-for-test-first-development>`_.
+.. tip:: リファクタリングが済みテストにパスしたタイミング、それはソースコントロールへコミットするタイミングとしてはちょうどいい。もしTDDサイクルを試しているなら、 `Red-Green-Refactorサイクルを適用することを考えてもいいかもしれない <http://ardalis.com/rgrc-is-the-new-red-green-refactor-for-test-first-development>`_。
 
 まとめ
 -------
