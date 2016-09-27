@@ -143,7 +143,7 @@ Microsoft.AspNetCore.TestHostパッケージでは、テストサーバーを作
 
 .. image:: integration-testing/_static/test-explorer.png
 
-.. note:: You can learn more about the unit tests in the `Unit testing`_ article.
+.. note:: ユニットテストについては、ユニットテストの記事でもっと学べる。
 
 ここまで来て、複数の成功したテストがある。ここがアプリケーションのデザインが良いものかを判断する良いタイミングだろう。もしアレなコードがあるようなら、リファクタリングすべきタイミングだろう。 
 
@@ -193,8 +193,6 @@ Microsoft.AspNetCore.TestHostパッケージでは、テストサーバーを作
     }
 
 このコードは動くが、機能として実装したいものには遠い。Configureメソッドが、URLエンドポイントを使いするたびに肥大化していく様を想像してみてほしい。  
-
-ASP.NET Coreのミドルウェアの長所が使える。それによって素数チェックロジックのカプセル化を行うことができる。
 
 ASP.NET Coreのミドルウェアの長所が使える。それによって素数チェックロジックのカプセル化を行うことができる。
 
@@ -271,7 +269,7 @@ ASP.NET Coreのミドルウェアの長所が使える。それによって素�
 
 .. note:: Since this middleware acts as an endpoint in the request delegate chain when its path matches, there is no call to ``_next.Invoke`` in the case where this middleware handles the request.
 
-このミドルウェアはそれ自身の設定を楽にするため下記のようにメソッドを加えてある
+このミドルウェアはそれ自身の設定を楽にするため下記のようにメソッドを加えてある。
 
 .. code-block:: cs
 
@@ -294,7 +292,7 @@ ASP.NET Coreのミドルウェアの長所が使える。それによって素�
 
 このリファクタリングにおいて、アプリケーションはこれまでと同様に動く。それは統合テストすべてにパスすることで保障されている。
 
-.. tip:: リファクタリングが済みテストにパスしたタイミング、それはソースコントロールへコミットするタイミングとしてはちょうどいい。もしTDDサイクルを試しているなら、。 `Red-Green-Refactorサイクルを適用することを考えてもいいかもしれない <http://ardalis.com/rgrc-is-the-new-red-green-refactor-for-test-first-development>`_.
+.. tip:: リファクタリングが済みテストにパスしたタイミング、それはソースコントロールへコミットするタイミングとしてはちょうどいい。もしTDDサイクルを試しているなら、 `Red-Green-Refactorサイクルを適用することを考えてもいいかもしれない <http://ardalis.com/rgrc-is-the-new-red-green-refactor-for-test-first-development>`_.
 
 まとめ
 -------
